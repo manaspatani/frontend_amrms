@@ -59,7 +59,7 @@ export function Sidebar({
     <aside
       aria-label="Sidebar navigation"
       className={cn(
-        "flex flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border transition-[width] duration-200 select-none",
+        "flex flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border backdrop-blur-md transition-[width] duration-200 select-none",
         isCollapsed ? "w-16" : "w-64",
         className
       )}
@@ -104,11 +104,11 @@ export function Sidebar({
               onClick={onNavigate}
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "group flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors outline-none",
+                "group flex items-center gap-3 rounded-xl px-2.5 py-2 text-sm font-medium transition-colors outline-none",
                 "focus-visible:ring-2 focus-visible:ring-sidebar-ring",
                 isActive
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold shadow-2xs"
-                  : "text-sidebar-foreground/75 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground",
                 isCollapsed && "justify-center px-0"
               )}
             >

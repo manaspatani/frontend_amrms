@@ -45,8 +45,10 @@ export function RunsOverTimeChart({
   className,
 }: RunsOverTimeChartProps) {
   const acceptedColor  = useCssVar("--verdict-accepted",    "oklch(0.42 0.13 165)");
-  const rolledBackColor= useCssVar("--verdict-rolled-back", "oklch(0.45 0.13 290)");
+  const rolledBackColor= useCssVar("--verdict-rolled-back", "oklch(0.65 0.18 50)");
   const healthyColor   = useCssVar("--verdict-healthy",     "oklch(0.40 0.12 200)");
+  const tooltipBg      = useCssVar("--card",                "white");
+  const tooltipBorder  = useCssVar("--border",              "oklch(0.91 0.02 295)");
 
   const isReducedMotion =
     typeof window !== "undefined"
@@ -97,7 +99,7 @@ export function RunsOverTimeChart({
             aria-label="Stacked bar chart of weekly recovery run outcomes"
             role="img"
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.5 0 0 / 0.12)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.68 0.06 290 / 0.25)" />
             <XAxis
               dataKey="week"
               tick={{ fontSize: 11 }}
@@ -112,9 +114,11 @@ export function RunsOverTimeChart({
             />
             <Tooltip
               contentStyle={{
-                borderRadius: "8px",
+                backgroundColor: tooltipBg,
+                borderRadius: "12px",
                 fontSize: "12px",
-                border: "1px solid oklch(0.5 0 0 / 0.15)",
+                border: `1px solid ${tooltipBorder}`,
+                boxShadow: "0 4px 16px oklch(0.52 0.22 288 / 0.12)",
               }}
             />
             <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
@@ -144,7 +148,7 @@ export function RunsOverTimeChart({
           </BarChart>
         </ResponsiveContainer>
         <p className="mt-3 text-xs text-muted-foreground">
-          {total} total runs in the period — accepted recoveries are shown in green, roll-backs in purple, and healthy checks in teal.
+          {total} total runs in the period — accepted recoveries are shown in green, roll-backs in amber, and healthy checks in teal.
         </p>
       </CardContent>
     </Card>

@@ -137,15 +137,15 @@ export function RecentModelsTable({
 
   // ── Table ──────────────────────────────────────────────────────────────
   return (
-    <div className={cn("overflow-x-auto rounded-xl border border-border", className)}>
+    <div className={cn("overflow-x-auto rounded-xl border border-border bg-card", className)}>
       <table className="w-full caption-bottom text-sm">
-        <thead className="[&_tr]:border-b border-border">
+        <thead className="[&_tr]:border-b border-border bg-muted/50">
           <tr>
             {COLS.map((col) => (
               <th
                 key={col}
                 scope="col"
-                className="h-10 px-3 text-left align-middle font-medium whitespace-nowrap text-foreground"
+                className="h-10 px-3 text-left align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground whitespace-nowrap"
               >
                 {col}
               </th>
@@ -156,7 +156,7 @@ export function RecentModelsTable({
           {data.map((model) => (
             <tr
               key={model.id}
-              className="border-b border-border transition-colors hover:bg-muted/50"
+              className="border-b border-border transition-colors hover:bg-primary/5"
             >
               {/* Model Name — link to run */}
               <td className="px-3 py-2 align-middle whitespace-nowrap font-medium">

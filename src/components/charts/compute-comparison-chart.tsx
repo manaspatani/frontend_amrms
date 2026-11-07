@@ -34,14 +34,20 @@ export function ComputeComparisonChart({
 }: ComputeComparisonChartProps) {
   const [amrsColor, setAmrsColor]   = React.useState("oklch(0.42 0.13 165)");
   const [fullColor, setFullColor]   = React.useState("oklch(0.50 0.20 25)");
+  const [tooltipBg, setTooltipBg]   = React.useState("white");
+  const [tooltipBorder, setTooltipBorder] = React.useState("oklch(0.91 0.02 295)");
 
   React.useLayoutEffect(() => {
     const style = getComputedStyle(document.documentElement);
     const c1 = style.getPropertyValue("--chart-1").trim();
     const c5 = style.getPropertyValue("--chart-5").trim();
+    const bg = style.getPropertyValue("--card").trim();
+    const bd = style.getPropertyValue("--border").trim();
     React.startTransition(() => {
       if (c1) setAmrsColor(c1);
       if (c5) setFullColor(c5);
+      if (bg) setTooltipBg(bg);
+      if (bd) setTooltipBorder(bd);
     });
   }, []);
 
@@ -89,7 +95,7 @@ export function ComputeComparisonChart({
             aria-label="Line chart comparing AMRS vs full retraining compute costs per week"
             role="img"
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.5 0 0 / 0.12)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.68 0.06 290 / 0.25)" />
             <XAxis
               dataKey="week"
               tick={{ fontSize: 11 }}
@@ -104,9 +110,11 @@ export function ComputeComparisonChart({
             />
             <Tooltip
               contentStyle={{
-                borderRadius: "8px",
+                backgroundColor: tooltipBg,
+                borderRadius: "12px",
                 fontSize: "12px",
-                border: "1px solid oklch(0.5 0 0 / 0.15)",
+                border: `1px solid ${tooltipBorder}`,
+                boxShadow: "0 4px 16px oklch(0.52 0.22 288 / 0.12)",
               }}
               formatter={(value) => [`${Number(value).toFixed(1)} CU`]}
             />

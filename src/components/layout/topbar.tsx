@@ -15,7 +15,7 @@ export function Topbar({ onOpenMobileMenu, className }: TopbarProps) {
   return (
     <header
       className={cn(
-        "sticky top-0 z-30 flex h-14 w-full items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur-xs transition-colors sm:px-6",
+        "sticky top-0 z-30 flex h-14 w-full items-center justify-between border-b border-border/60 bg-card/70 px-4 backdrop-blur-md transition-colors sm:px-6",
         className
       )}
     >

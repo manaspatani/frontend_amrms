@@ -42,12 +42,19 @@ export function StrategySuccessChart({
   className,
 }: StrategySuccessChartProps) {
   const [barColor, setBarColor] = React.useState("oklch(0.42 0.13 165)");
+  const [tooltipBg, setTooltipBg] = React.useState("white");
+  const [tooltipBorder, setTooltipBorder] = React.useState("oklch(0.91 0.02 295)");
 
   React.useLayoutEffect(() => {
-    const c = getComputedStyle(document.documentElement)
-      .getPropertyValue("--chart-1")
-      .trim();
-    if (c) React.startTransition(() => setBarColor(c));
+    const style = getComputedStyle(document.documentElement);
+    const c = style.getPropertyValue("--chart-1").trim();
+    const bg = style.getPropertyValue("--card").trim();
+    const bd = style.getPropertyValue("--border").trim();
+    React.startTransition(() => {
+      if (c) setBarColor(c);
+      if (bg) setTooltipBg(bg);
+      if (bd) setTooltipBorder(bd);
+    });
   }, []);
 
   const isReducedMotion =
@@ -106,7 +113,7 @@ export function StrategySuccessChart({
             aria-label="Horizontal bar chart of recovery strategy success rates"
             role="img"
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.5 0 0 / 0.12)" horizontal={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.68 0.06 290 / 0.25)" horizontal={false} />
             <XAxis
               type="number"
               domain={[0, 100]}
@@ -125,9 +132,11 @@ export function StrategySuccessChart({
             />
             <Tooltip
               contentStyle={{
-                borderRadius: "8px",
+                backgroundColor: tooltipBg,
+                borderRadius: "12px",
                 fontSize: "12px",
-                border: "1px solid oklch(0.5 0 0 / 0.15)",
+                border: `1px solid ${tooltipBorder}`,
+                boxShadow: "0 4px 16px oklch(0.52 0.22 288 / 0.12)",
               }}
               formatter={(value, _name, item) => [
                 `${String(value)}% (${(item.payload as { accepted: number; attempts: number }).accepted}/${(item.payload as { accepted: number; attempts: number }).attempts} runs)`,

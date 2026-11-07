@@ -118,7 +118,7 @@ function KpiCard({ card }: { card: KpiCardData }) {
       <CardHeader className="pb-1">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <Icon className="size-4" aria-hidden="true" />
             </span>
             <CardTitle className="text-sm font-medium text-muted-foreground leading-snug">
@@ -137,14 +137,16 @@ function KpiCard({ card }: { card: KpiCardData }) {
         </div>
       </CardHeader>
       <CardContent className="pb-4">
-        <p className="text-2xl font-bold tracking-tight text-foreground">
+        <p className="text-3xl font-bold tracking-tight text-foreground">
           {card.value}
         </p>
         {card.delta && (
-          <p
+          <span
             className={cn(
-              "mt-1 flex items-center gap-0.5 text-xs font-medium",
-              card.deltaPositive ? "text-verdict-accepted-fg" : "text-verdict-error-fg"
+              "mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold",
+              card.deltaPositive
+                ? "bg-verdict-accepted-bg text-verdict-accepted-fg"
+                : "bg-verdict-error-bg text-verdict-error-fg"
             )}
             aria-label={`Change: ${card.delta}`}
           >
@@ -154,7 +156,7 @@ function KpiCard({ card }: { card: KpiCardData }) {
               <ArrowDown className="size-3 shrink-0" aria-hidden="true" />
             )}
             {card.delta}
-          </p>
+          </span>
         )}
         {!card.delta && card.subtext && (
           <p className="mt-1 text-xs text-muted-foreground">{card.subtext}</p>
@@ -176,12 +178,12 @@ export function KpiCardsSkeleton() {
         <Card key={i}>
           <CardHeader className="pb-1">
             <div className="flex items-center gap-2">
-              <Skeleton className="size-8 shrink-0 rounded-lg" />
+              <Skeleton className="size-9 shrink-0 rounded-xl" />
               <Skeleton className="h-4 w-28" />
             </div>
           </CardHeader>
           <CardContent className="pb-4">
-            <Skeleton className="h-7 w-20 mt-1" />
+            <Skeleton className="h-8 w-24 mt-1" />
             <Skeleton className="h-3.5 w-24 mt-2" />
           </CardContent>
         </Card>

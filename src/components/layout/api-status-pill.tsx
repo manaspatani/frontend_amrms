@@ -14,17 +14,17 @@ const statusConfig: Record<
 > = {
   online: {
     label: "Online",
-    dotClass: "bg-emerald-600 dark:bg-emerald-400",
+    dotClass: "bg-verdict-accepted",
     ariaLabel: "API Status: Online",
   },
   degraded: {
     label: "Degraded",
-    dotClass: "bg-amber-500 dark:bg-amber-400",
+    dotClass: "bg-verdict-rolled-back",
     ariaLabel: "API Status: Degraded",
   },
   offline: {
     label: "Offline",
-    dotClass: "bg-rose-500 dark:bg-rose-400",
+    dotClass: "bg-verdict-error",
     ariaLabel: "API Status: Offline",
   },
 };

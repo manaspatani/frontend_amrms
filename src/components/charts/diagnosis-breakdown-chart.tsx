@@ -53,6 +53,8 @@ export function DiagnosisBreakdownChart({
   className,
 }: DiagnosisBreakdownChartProps) {
   const [colors, setColors] = React.useState<Record<string, string>>({});
+  const [tooltipBg, setTooltipBg] = React.useState("white");
+  const [tooltipBorder, setTooltipBorder] = React.useState("oklch(0.91 0.02 295)");
 
   React.useLayoutEffect(() => {
     const style = getComputedStyle(document.documentElement);
@@ -60,7 +62,13 @@ export function DiagnosisBreakdownChart({
     for (const [label, varName] of Object.entries(COLOR_VARS)) {
       resolved[label] = style.getPropertyValue(varName).trim() || "oklch(0.5 0.1 240)";
     }
-    React.startTransition(() => setColors(resolved));
+    const bg = style.getPropertyValue("--card").trim();
+    const bd = style.getPropertyValue("--border").trim();
+    React.startTransition(() => {
+      setColors(resolved);
+      if (bg) setTooltipBg(bg);
+      if (bd) setTooltipBorder(bd);
+    });
   }, []);
 
   const isReducedMotion =
@@ -114,7 +122,7 @@ export function DiagnosisBreakdownChart({
             aria-label="Horizontal bar chart showing diagnosis counts"
             role="img"
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.5 0 0 / 0.12)" horizontal={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.68 0.06 290 / 0.25)" horizontal={false} />
             <XAxis
               type="number"
               tick={{ fontSize: 11 }}
@@ -132,9 +140,11 @@ export function DiagnosisBreakdownChart({
             />
             <Tooltip
               contentStyle={{
-                borderRadius: "8px",
+                backgroundColor: tooltipBg,
+                borderRadius: "12px",
                 fontSize: "12px",
-                border: "1px solid oklch(0.5 0 0 / 0.15)",
+                border: `1px solid ${tooltipBorder}`,
+                boxShadow: "0 4px 16px oklch(0.52 0.22 288 / 0.12)",
               }}
               formatter={(value) => [value, "Runs"]}
             />
