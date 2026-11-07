@@ -23,11 +23,10 @@ import {
   ShieldCheck,
   Activity,
   Clock,
-  CheckCircle2,
 } from "lucide-react";
 import Link from "next/link";
 import { startMonitorReplay } from "@/lib/api";
-import type { MonitorReplay, MonitorPoint, MonitorEvent, ScenarioId } from "@/lib/api/types";
+import type { MonitorPoint, MonitorEvent, ScenarioId } from "@/lib/api/types";
 import { getMonitorThresholds } from "@/lib/api/recovery";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,9 +40,9 @@ import {
 } from "@/components/ui/select";
 import { ErrorState } from "@/components/status/error-state";
 import { ChartSkeleton } from "@/components/status/skeletons";
-import { Skeleton } from "@/components/ui/skeleton";
 import { VerdictBanner } from "@/components/status/verdict-banner";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/lib/hooks/use-reduced-motion";
 
 // ─── CSS var hook ─────────────────────────────────────────────────────────────
 function useCssVar(name: string, fallback: string) {
@@ -52,18 +51,6 @@ function useCssVar(name: string, fallback: string) {
     const val = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
     if (val) React.startTransition(() => setV(val));
   }, [name]);
-  return v;
-}
-
-function useReducedMotion() {
-  const [v, setV] = React.useState(false);
-  React.useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setV(mq.matches);
-    const h = (e: MediaQueryListEvent) => setV(e.matches);
-    mq.addEventListener("change", h);
-    return () => mq.removeEventListener("change", h);
-  }, []);
   return v;
 }
 
@@ -128,8 +115,6 @@ function computeHealth(
   events: MonitorEvent[],
   epoch: number,
   patience: number,
-  gapThreshold: number,
-  smoothingWindow: number,
 ): { health: HealthKey; gap: number; patienceCounter: number; inCooldown: boolean; cooldownRemaining: number } {
   const visible = points.filter((p) => p.epoch <= epoch);
   if (!visible.length) return { health: "healthy", gap: 0, patienceCounter: 0, inCooldown: false, cooldownRemaining: 0 };
@@ -153,7 +138,6 @@ function computeHealth(
 // ─── Main monitor page ────────────────────────────────────────────────────────
 export default function MonitorPage() {
   const [scenarioId, setScenarioId] = React.useState<ScenarioId>("S1");
-  const [replay, setReplay] = React.useState<MonitorReplay | null>(null);
   const [epoch, setEpoch] = React.useState(0);
   const [playing, setPlaying] = React.useState(false);
   const [speed, setSpeed] = React.useState<Speed>(1);
@@ -162,7 +146,7 @@ export default function MonitorPage() {
 
   const thresholdsQuery = useQuery({
     queryKey: ["monitorThresholds"],
-    queryFn: getThresholds,
+    queryFn: getMonitorThresholds,
   });
 
   const replayQuery = useQuery({
@@ -171,14 +155,7 @@ export default function MonitorPage() {
     staleTime: Infinity,
   });
 
-  // When replay data loads, reset state
-  React.useEffect(() => {
-    if (replayQuery.data) {
-      setReplay(replayQuery.data);
-      setEpoch(0);
-      setPlaying(false);
-    }
-  }, [replayQuery.data]);
+  const replay = replayQuery.data ?? null;
 
   // Playback timer
   const intervalRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
@@ -226,8 +203,6 @@ export default function MonitorPage() {
       replay.events,
       epoch,
       thresholds.patience,
-      thresholds.gap_threshold,
-      thresholds.smoothing_window,
     );
   }, [replay, epoch, thresholds]);
 
@@ -263,8 +238,17 @@ export default function MonitorPage() {
 
         {/* Controls */}
         <div className="flex flex-wrap items-center gap-2 shrink-0">
-          <Select selectedKey={scenarioId} onSelectionChange={(k) => setScenarioId(k as ScenarioId)}>
-            <SelectTrigger className="w-44"><SelectValue<string> /></SelectTrigger>
+          <Select
+            selectedKey={scenarioId}
+            onSelectionChange={(k) => {
+              if (k) {
+                setScenarioId(k as ScenarioId);
+                setEpoch(0);
+                setPlaying(false);
+              }
+            }}
+          >
+            <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
             <SelectContent>
               {REPLAY_OPTIONS.map((r) => (
                 <SelectItem key={r.scenarioId} id={r.scenarioId}>{r.label}</SelectItem>
@@ -359,20 +343,48 @@ export default function MonitorPage() {
               <CardDescription>Train vs validation loss with event markers</CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={260}>
-                <LineChart data={visiblePoints} margin={{ top: 4, right: 8, left: -8, bottom: 0 }} aria-label="Training and validation loss over epochs" role="img">
+              <ResponsiveContainer width="100%" height={280}>
+                <LineChart
+                  data={visiblePoints}
+                  margin={{ top: 8, right: 16, left: -8, bottom: 24 }}
+                  aria-label="Training and validation loss over epochs"
+                  role="img"
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.68 0.06 290 / 0.25)" />
-                  <XAxis dataKey="epoch" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} label={{ value: "Epoch", position: "insideBottom", offset: -2, fontSize: 11 }} />
+                  <XAxis
+                    dataKey="epoch"
+                    tick={{ fontSize: 11 }}
+                    tickLine={false}
+                    axisLine={false}
+                    label={{
+                      value: "Epoch",
+                      position: "insideBottom",
+                      offset: -14,
+                      fontSize: 11,
+                      fill: "var(--muted-foreground)",
+                    }}
+                  />
                   <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
                   <Tooltip contentStyle={tooltipStyle} />
-                  <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
+                  <Legend
+                    verticalAlign="top"
+                    align="right"
+                    iconType="circle"
+                    iconSize={8}
+                    wrapperStyle={{ paddingBottom: "12px", fontSize: "12px" }}
+                  />
                   {visibleEvents.map((ev) => (
                     <ReferenceLine
                       key={`${ev.epoch}-${ev.type}`}
                       x={ev.epoch}
                       stroke={REF_LINE_COLORS[ev.type as keyof typeof REF_LINE_COLORS] ?? "oklch(0.52 0.22 288)"}
                       strokeDasharray="4 2"
-                      label={{ value: ev.type.replace(/_/g, " "), position: "top", fontSize: 9, fill: REF_LINE_COLORS[ev.type as keyof typeof REF_LINE_COLORS] ?? "oklch(0.52 0.22 288)" }}
+                      label={{
+                        value: ev.type.replace(/_/g, " "),
+                        position: "top",
+                        fontSize: 9,
+                        fill: REF_LINE_COLORS[ev.type as keyof typeof REF_LINE_COLORS] ?? "oklch(0.52 0.22 288)",
+                      }}
                     />
                   ))}
                   <Line type="monotone" dataKey="train_loss" name="Train Loss" stroke={chart1} dot={false} strokeWidth={2} isAnimationActive={false} />
@@ -392,13 +404,41 @@ export default function MonitorPage() {
               <CardDescription>Train vs validation accuracy with event markers</CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={260}>
-                <LineChart data={visiblePoints} margin={{ top: 4, right: 8, left: -8, bottom: 0 }} aria-label="Training and validation accuracy over epochs" role="img">
+              <ResponsiveContainer width="100%" height={280}>
+                <LineChart
+                  data={visiblePoints}
+                  margin={{ top: 8, right: 16, left: -8, bottom: 24 }}
+                  aria-label="Training and validation accuracy over epochs"
+                  role="img"
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.68 0.06 290 / 0.25)" />
-                  <XAxis dataKey="epoch" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} label={{ value: "Epoch", position: "insideBottom", offset: -2, fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${(v*100).toFixed(0)}%`} />
-                  <Tooltip formatter={(v: number) => `${(v*100).toFixed(1)}%`} contentStyle={tooltipStyle} />
-                  <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
+                  <XAxis
+                    dataKey="epoch"
+                    tick={{ fontSize: 11 }}
+                    tickLine={false}
+                    axisLine={false}
+                    label={{
+                      value: "Epoch",
+                      position: "insideBottom",
+                      offset: -14,
+                      fontSize: 11,
+                      fill: "var(--muted-foreground)",
+                    }}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11 }}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(v) => `${(v * 100).toFixed(0)}%`}
+                  />
+                  <Tooltip formatter={(v) => `${(Number(v) * 100).toFixed(1)}%`} contentStyle={tooltipStyle} />
+                  <Legend
+                    verticalAlign="top"
+                    align="right"
+                    iconType="circle"
+                    iconSize={8}
+                    wrapperStyle={{ paddingBottom: "12px", fontSize: "12px" }}
+                  />
                   {visibleEvents.map((ev) => (
                     <ReferenceLine
                       key={`acc-${ev.epoch}-${ev.type}`}

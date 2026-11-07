@@ -27,7 +27,7 @@ export type Dataset = (typeof datasets)[number];
 
 export const newRunFormSchema = z.object({
   scenarioId: z.enum(SCENARIO_IDS, {
-    errorMap: () => ({ message: "Please choose a scenario" }),
+    message: "Please choose a scenario",
   }),
   file: z
     .any()
@@ -38,10 +38,10 @@ export const newRunFormSchema = z.object({
       { message: "File must be a .pt or .pth checkpoint" }
     ),
   architecture: z.enum(architectures, {
-    errorMap: () => ({ message: "Please select an architecture" }),
+    message: "Please select an architecture",
   }),
   dataset: z.enum(datasets, {
-    errorMap: () => ({ message: "Please select a dataset" }),
+    message: "Please select a dataset",
   }),
 });
 

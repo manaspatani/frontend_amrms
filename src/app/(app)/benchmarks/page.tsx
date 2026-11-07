@@ -9,9 +9,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
-  ErrorBar,
 } from "recharts";
 import { CheckCircle2 } from "lucide-react";
 import { getBenchmarkExt } from "@/lib/api/recovery";
@@ -31,6 +29,7 @@ import { ChartSkeleton, CardSkeleton } from "@/components/status/skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatPercent } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/lib/hooks/use-reduced-motion";
 
 // ─── CSS var hook ─────────────────────────────────────────────────────────────
 function useCssVar(name: string, fallback: string) {
@@ -40,18 +39,6 @@ function useCssVar(name: string, fallback: string) {
     if (v) React.startTransition(() => setValue(v));
   }, [name]);
   return value;
-}
-
-function useReducedMotion() {
-  const [v, setV] = React.useState(false);
-  React.useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setV(mq.matches);
-    const h = (e: MediaQueryListEvent) => setV(e.matches);
-    mq.addEventListener("change", h);
-    return () => mq.removeEventListener("change", h);
-  }, []);
-  return v;
 }
 
 // ─── Method colors ────────────────────────────────────────────────────────────
@@ -192,65 +179,6 @@ interface ChartGridProps {
   methods: BenchmarkMethodExt[];
 }
 
-function MethodBarChart({
-  title,
-  dataKey,
-  methods,
-  unit,
-  summary,
-  higherBetter,
-}: {
-  title: string;
-  dataKey: "accuracy_mean" | "ece_mean" | "compute_units_mean" | "wall_time_s_mean";
-  stdKey?: "accuracy_std" | "ece_std";
-  methods: BenchmarkMethodExt[];
-  unit: string;
-  summary: string;
-  higherBetter: boolean;
-}) {
-  const isReducedMotion = useReducedMotion();
-  const colors = useMethodColors();
-
-  const data = methods.map((m) => ({
-    method: m.method,
-    value: parseFloat(m[dataKey].toFixed(4)),
-    std: (dataKey === "accuracy_mean"
-      ? m.accuracy_std
-      : dataKey === "ece_mean"
-        ? m.ece_std
-        : 0
-    ),
-    fill: methodColor(m.method, colors),
-  }));
-
-  return (
-    <Card className="flex flex-col">
-      <CardHeader>
-        <CardTitle className="text-sm">{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="pt-0 flex-1">
-        <ResponsiveContainer width="100%" height={200}>
-          <BarChart data={data} margin={{ top: 4, right: 8, left: -8, bottom: 0 }} aria-label={`${title} chart`} role="img">
-            <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.68 0.06 290 / 0.25)" />
-            <XAxis dataKey="method" tick={{ fontSize: 9 }} tickLine={false} axisLine={false} />
-            <YAxis tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
-            <Tooltip
-              formatter={(v: number) => [`${v.toFixed(3)} ${unit}`, title]}
-              contentStyle={{ backgroundColor: colors.tooltipBg, borderRadius: "12px", fontSize: "11px", border: `1px solid ${colors.tooltipBorder}` }}
-            />
-            <Bar dataKey="value" isAnimationActive={!isReducedMotion} radius={[4, 4, 0, 0]}>
-              {data.map((entry) => (
-                <rect key={entry.method} fill={entry.fill} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-        <p className="mt-2 text-xs text-muted-foreground">{summary}</p>
-      </CardContent>
-    </Card>
-  );
-}
-
 function ChartGrid({ methods }: ChartGridProps) {
   const isReducedMotion = useReducedMotion();
   const colors = useMethodColors();
@@ -274,7 +202,7 @@ function ChartGrid({ methods }: ChartGridProps) {
               <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.68 0.06 290 / 0.25)" />
               <XAxis dataKey="method" tick={{ fontSize: 9 }} tickLine={false} axisLine={false} />
               <YAxis domain={[0.6, 1]} tick={{ fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${(v*100).toFixed(0)}%`} />
-              <Tooltip formatter={(v: number) => [`${(v*100).toFixed(2)}%`, "Accuracy"]} contentStyle={{ backgroundColor: colors.tooltipBg, borderRadius: "12px", fontSize: "11px", border: `1px solid ${colors.tooltipBorder}` }} />
+              <Tooltip formatter={(v) => [`${(Number(v)*100).toFixed(2)}%`, "Accuracy"]} contentStyle={{ backgroundColor: colors.tooltipBg, borderRadius: "12px", fontSize: "11px", border: `1px solid ${colors.tooltipBorder}` }} />
               <Bar dataKey="value" isAnimationActive={!isReducedMotion} radius={[4,4,0,0]}>
                 {makeData("accuracy_mean").map((e) => (
                   <rect key={e.method} fill={e.fill} />
@@ -295,7 +223,7 @@ function ChartGrid({ methods }: ChartGridProps) {
               <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.68 0.06 290 / 0.25)" />
               <XAxis dataKey="method" tick={{ fontSize: 9 }} tickLine={false} axisLine={false} />
               <YAxis tick={{ fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${(v*100).toFixed(0)}%`} />
-              <Tooltip formatter={(v: number) => [`${(v*100).toFixed(2)}%`, "ECE"]} contentStyle={{ backgroundColor: colors.tooltipBg, borderRadius: "12px", fontSize: "11px", border: `1px solid ${colors.tooltipBorder}` }} />
+              <Tooltip formatter={(v) => [`${(Number(v)*100).toFixed(2)}%`, "ECE"]} contentStyle={{ backgroundColor: colors.tooltipBg, borderRadius: "12px", fontSize: "11px", border: `1px solid ${colors.tooltipBorder}` }} />
               <Bar dataKey="value" isAnimationActive={!isReducedMotion} radius={[4,4,0,0]}>
                 {makeData("ece_mean").map((e) => (
                   <rect key={e.method} fill={e.fill} />
@@ -316,7 +244,7 @@ function ChartGrid({ methods }: ChartGridProps) {
               <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.68 0.06 290 / 0.25)" />
               <XAxis dataKey="method" tick={{ fontSize: 9 }} tickLine={false} axisLine={false} />
               <YAxis tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
-              <Tooltip formatter={(v: number) => [`${v.toFixed(1)} CU`, "Compute"]} contentStyle={{ backgroundColor: colors.tooltipBg, borderRadius: "12px", fontSize: "11px", border: `1px solid ${colors.tooltipBorder}` }} />
+              <Tooltip formatter={(v) => [`${Number(v).toFixed(1)} CU`, "Compute"]} contentStyle={{ backgroundColor: colors.tooltipBg, borderRadius: "12px", fontSize: "11px", border: `1px solid ${colors.tooltipBorder}` }} />
               <Bar dataKey="value" isAnimationActive={!isReducedMotion} radius={[4,4,0,0]}>
                 {makeData("compute_units_mean").map((e) => (
                   <rect key={e.method} fill={e.fill} />
@@ -337,7 +265,7 @@ function ChartGrid({ methods }: ChartGridProps) {
               <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.68 0.06 290 / 0.25)" />
               <XAxis dataKey="method" tick={{ fontSize: 9 }} tickLine={false} axisLine={false} />
               <YAxis tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
-              <Tooltip formatter={(v: number) => [`${v.toFixed(0)} s`, "Wall Time"]} contentStyle={{ backgroundColor: colors.tooltipBg, borderRadius: "12px", fontSize: "11px", border: `1px solid ${colors.tooltipBorder}` }} />
+              <Tooltip formatter={(v) => [`${Number(v).toFixed(0)} s`, "Wall Time"]} contentStyle={{ backgroundColor: colors.tooltipBg, borderRadius: "12px", fontSize: "11px", border: `1px solid ${colors.tooltipBorder}` }} />
               <Bar dataKey="value" isAnimationActive={!isReducedMotion} radius={[4,4,0,0]}>
                 {makeData("wall_time_s_mean").map((e) => (
                   <rect key={e.method} fill={e.fill} />
@@ -419,7 +347,7 @@ export default function BenchmarksPage() {
           <span className="text-xs text-muted-foreground">Scenario</span>
           <Select selectedKey={scenarioId} onSelectionChange={(k) => setScenarioId(k as ScenarioId)}>
             <SelectTrigger className="w-44">
-              <SelectValue<string> />
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {BENCHMARK_SCENARIOS.map((s) => (

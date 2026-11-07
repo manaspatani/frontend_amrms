@@ -20,6 +20,8 @@ import { mockMonitorReplays } from "@/lib/mock/monitor";
 
 export * from "./types";
 export * from "./client";
+export * from "./recovery";
+export * from "./feedback";
 
 export interface CreateRunInput {
   scenario_id: ScenarioId;

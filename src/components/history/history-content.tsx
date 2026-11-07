@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { listHistoryRuns } from "@/lib/api/recovery";
-import type { HistoryRun } from "@/lib/schemas/recovery";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -85,8 +84,8 @@ function SortHeader({
     <button
       type="button"
       onClick={() => onSort(sortKey)}
-      className="flex items-center gap-1 hover:text-foreground transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
-      aria-sort={active ? (currentDir === "asc" ? "ascending" : "descending") : "none"}
+      className="inline-flex items-center gap-1 hover:text-foreground transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+      aria-label={`Sort by ${label}`}
     >
       {label}
       <Icon className="size-3.5 shrink-0" aria-hidden />
@@ -239,7 +238,7 @@ export function HistoryContent() {
         <div>
           <label className="sr-only" id="verdict-label">Verdict</label>
           <Select selectedKey={verdict} onSelectionChange={(k) => updateParams({ verdict: String(k) })} aria-labelledby="verdict-label">
-            <SelectTrigger className="w-36"><SelectValue<string> placeholder="All verdicts" /></SelectTrigger>
+            <SelectTrigger className="w-36"><SelectValue placeholder="All verdicts" /></SelectTrigger>
             <SelectContent>
               <SelectItem id="all">All verdicts</SelectItem>
               <SelectItem id="accepted">Accepted</SelectItem>
@@ -253,7 +252,7 @@ export function HistoryContent() {
         <div>
           <label className="sr-only" id="scenario-label">Scenario</label>
           <Select selectedKey={scenario_id} onSelectionChange={(k) => updateParams({ scenario: String(k) })} aria-labelledby="scenario-label">
-            <SelectTrigger className="w-40"><SelectValue<string> placeholder="All scenarios" /></SelectTrigger>
+            <SelectTrigger className="w-40"><SelectValue placeholder="All scenarios" /></SelectTrigger>
             <SelectContent>
               <SelectItem id="all">All scenarios</SelectItem>
               {["S1","S2","S3","S4","S5","S6"].map((s) => (
@@ -267,7 +266,7 @@ export function HistoryContent() {
         <div>
           <label className="sr-only" id="arch-label">Architecture</label>
           <Select selectedKey={architecture} onSelectionChange={(k) => updateParams({ arch: String(k) })} aria-labelledby="arch-label">
-            <SelectTrigger className="w-40"><SelectValue<string> placeholder="All architectures" /></SelectTrigger>
+            <SelectTrigger className="w-40"><SelectValue placeholder="All architectures" /></SelectTrigger>
             <SelectContent>
               <SelectItem id="all">All architectures</SelectItem>
               <SelectItem id="mlp_small">mlp_small</SelectItem>
@@ -328,11 +327,17 @@ export function HistoryContent() {
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">Scenario</th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">Diagnosis</th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">Verdict</th>
-                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+                    <th
+                      className="px-4 py-3 text-right font-medium text-muted-foreground"
+                      aria-sort={sortKey === "accuracy_gain" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}
+                    >
                       <SortHeader label="Accuracy" sortKey="accuracy_gain" currentKey={sortKey} currentDir={sortDir} onSort={handleSort} />
                     </th>
                     <th className="px-4 py-3 text-right font-medium text-muted-foreground">Compute (CU)</th>
-                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+                    <th
+                      className="px-4 py-3 text-right font-medium text-muted-foreground"
+                      aria-sort={sortKey === "created_at" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}
+                    >
                       <SortHeader label="Date" sortKey="created_at" currentKey={sortKey} currentDir={sortDir} onSort={handleSort} />
                     </th>
                   </tr>

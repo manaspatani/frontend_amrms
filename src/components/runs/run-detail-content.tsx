@@ -1,20 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   CheckCircle2,
-  RotateCcw,
-  ShieldCheck,
-  AlertTriangle,
   X,
   Download,
   FileText,
   Loader2,
   ChevronRight,
 } from "lucide-react";
-import Link from "next/link";
 import {
   BarChart,
   Bar,
@@ -37,6 +32,7 @@ import { ErrorState } from "@/components/status/error-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { formatAccuracy, formatUtcDate } from "@/lib/format";
+import { useReducedMotion } from "@/lib/hooks/use-reduced-motion";
 
 // ─── CSS var hook ─────────────────────────────────────────────────────────────
 function useCssVar(name: string, fallback: string) {
@@ -46,19 +42,6 @@ function useCssVar(name: string, fallback: string) {
     if (v) React.startTransition(() => setValue(v));
   }, [name]);
   return value;
-}
-
-// ─── Reduced motion ───────────────────────────────────────────────────────────
-function useReducedMotion() {
-  const [reduced, setReduced] = React.useState(false);
-  React.useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduced(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
-  return reduced;
 }
 
 // ─── Stage stepper ────────────────────────────────────────────────────────────
@@ -449,8 +432,6 @@ const SCENARIO_LABELS: Record<string, string> = {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export function RunDetailContent({ runId }: { runId: string }) {
-  const router = useRouter();
-
   const TERMINAL = ["succeeded", "failed", "cancelled"];
 
   const query = useQuery<Run>({

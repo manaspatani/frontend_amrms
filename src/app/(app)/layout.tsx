@@ -6,7 +6,8 @@ import {
   Modal as ModalPrimitive,
   Dialog as DialogPrimitive,
 } from "react-aria-components";
-import { X, Cpu } from "lucide-react";
+import { X } from "lucide-react";
+import Image from "next/image";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { Button } from "@/components/ui/button";
@@ -53,12 +54,16 @@ export default function AppLayout({
             aria-label="Mobile Navigation"
             className="flex h-full flex-col outline-none"
           >
-            <div className="flex h-14 items-center justify-between border-b border-sidebar-border px-4">
-              <div className="flex items-center gap-2 font-semibold text-sidebar-foreground">
-                <div className="flex size-7 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Cpu className="size-4" aria-hidden="true" />
-                </div>
-                <span className="text-sm font-bold">AMRS</span>
+            <div className="flex h-15 items-center justify-between border-b border-sidebar-border px-4">
+              <div className="flex items-center gap-2.5">
+                <Image
+                  src="/amrs-logo.png"
+                  alt="AMRS Logo"
+                  width={130}
+                  height={32}
+                  priority
+                  className="h-7 w-auto object-contain [html:not(.dark)_&]:invert [html:not(.dark)_&]:hue-rotate-180"
+                />
               </div>
               <Button
                 variant="ghost"

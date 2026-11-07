@@ -54,11 +54,18 @@ function SelectGroup<T extends object>({
   )
 }
 
-function SelectValue<T extends object>({
+interface SelectValueComponentProps<T extends object>
+  extends Omit<SelectValueProps<T>, "children"> {
+  placeholder?: string
+  children?: SelectValueProps<T>["children"]
+}
+
+function SelectValue<T extends object = object>({
   className,
   children,
+  placeholder,
   ...props
-}: SelectValueProps<T>) {
+}: SelectValueComponentProps<T>) {
   return (
     <SelectValuePrimitive
       data-slot="select-value"
@@ -71,7 +78,9 @@ function SelectValue<T extends object>({
       {typeof children === "function"
         ? children
         : ({ selectedItems, selectedText, defaultChildren }) =>
-            selectedItems.length > 1 ? selectedText : defaultChildren}
+            selectedItems.length > 1
+              ? selectedText
+              : (defaultChildren || placeholder)}
     </SelectValuePrimitive>
   )
 }
