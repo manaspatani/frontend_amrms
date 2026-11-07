@@ -19,3 +19,4 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Accessibility: contrast >= 4.5:1, verdicts always show icon + text (never color alone), keyboard
   reachable controls, text summary under every chart, respect prefers-reduced-motion.
 - Every page needs loading, empty and error states.
+- Run `npm run lint` and `npm run build` before finishing any task and fix all errors.
